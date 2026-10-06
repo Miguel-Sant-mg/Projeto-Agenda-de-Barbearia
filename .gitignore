@@ -1,0 +1,28 @@
+# Variáveis de ambiente e segredos locais
+.env
+.env.local
+.env.*.local
+
+# Banco de dados local (contém agendamentos reais e dados sensíveis)
+*.db
+*.db-journal
+*.sqlite3
+
+# Python bytecode e cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Ambientes virtuais
+.venv/
+venv/
+ENV/
+env/
+
+# Logs e arquivos de sistema
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

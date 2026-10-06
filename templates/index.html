@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}{{ barbearia_nome }} - Agende seu Horário{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Hero Header -->
+  <section class="hero-booking">
+    <div class="hero-badge">Agendamento Online 24h</div>
+    <h1 class="hero-title">Estilo e Respeito na <span>Arte de Favela</span></h1>
+    <p class="hero-subtitle">Escolha o serviço desejado, defina seu dia e garanta sua cadeira com os melhores barbeiros em poucos segundos.</p>
+  </section>
+
+  <!-- Indicador de Passos (Stepper) -->
+  <div class="stepper-wrap">
+    <div class="stepper-line">
+      <div class="stepper-progress"></div>
+    </div>
+    
+    <div class="step-item active" data-step="1">
+      <div class="step-circle">1</div>
+      <span class="step-label">Serviço</span>
+    </div>
+
+    <div class="step-item" data-step="2">
+      <div class="step-circle">2</div>
+      <span class="step-label">Data</span>
+    </div>
+
+    <div class="step-item" data-step="3">
+      <div class="step-circle">3</div>
+      <span class="step-label">Horário</span>
+    </div>
+
+    <div class="step-item" data-step="4">
+      <div class="step-circle">4</div>
+      <span class="step-label">Confirmação</span>
+    </div>
+  </div>
+
+  <!-- Card Principal de Agendamento -->
+  <div class="booking-card">
+
+    <!-- PASSO 1: Escolha do Serviço -->
+    <section class="step-section active" data-step="1" id="step1">
+      <div class="step-header">
+        <h3>✂️ Escolha o Serviço</h3>
+        <p>Selecione um dos nossos procedimentos profissionais abaixo:</p>
+      </div>
+
+      <div class="services-grid">
+        {% for servico in servicos %}
+          <div class="service-card" 
+               data-id="{{ servico.id }}" 
+               data-nome="{{ servico.nome }}" 
+               data-preco="{{ servico.preco }}"
+               data-descricao="{{ servico.descricao }}">
+            
+            {% if "combo" in servico.nome.lower() %}
+              <span class="service-badge-combo">Destaque VIP</span>
+            {% endif %}
+
+            <div class="service-top">
+              <h4 class="service-name">{{ servico.nome }}</h4>
+              <p class="service-desc">{{ servico.descricao }}</p>
+              
+              {% if "corte" in servico.nome.lower() and not "combo" in servico.nome.lower() %}
+                <ul class="service-features">
+                  <li>✨ Inclui acabamento de sobrancelha grátis!</li>
+                </ul>
+              {% endif %}
+            </div>
+
+            <div class="service-bottom">
+              <span class="service-price">{{ servico.preco|moeda }}</span>
+              <span class="service-duration">⏱️ ~{{ servico.duracao_minutos }} min</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="step-actions" style="justify-content: flex-end;">
+        <button type="button" class="btn btn-primary" id="btnNext1" disabled>
+          Avançar para Data &rarr;
+        </button>
+      </div>
+    </section>
+
+    <!-- PASSO 2: Escolha da Data -->
+    <section class="step-section" data-step="2" id="step2">
+      <div class="step-header">
+        <h3>📅 Selecione o Dia do Atendimento</h3>
+        <p>A Barbearia Arte de Favela atende exclusivamente às <strong>Sextas-feiras</strong> e aos <strong>Sábados</strong>:</p>
+      </div>
+
+      <div class="date-selection-box" style="max-width: 540px;">
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.88rem; color: #fbbf24; text-align: center;">
+          ⏰ <strong>Sexta-feira:</strong> 08:00 às 19:00 &bull; <strong>Sábado:</strong> 08:00 às 18:00
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 600;">
+          Escolha uma opção fixa de Sexta ou Sábado:
+        </p>
+        <div class="date-shortcuts" id="fixedDaysShortcuts" style="flex-wrap: wrap; gap: 8px; justify-content: center;">
+          <!-- Preenchido automaticamente com as próximas sextas e sábados -->
+        </div>
+
+        <div style="margin-top: 20px; text-align: left;">
+          <label for="bookingDate" style="font-weight: 600; color: var(--text-muted); font-size: 0.88rem;">
+            Ou selecione outra Sexta ou Sábado no calendário:
+          </label>
+          <input type="date" id="bookingDate" class="custom-date-input" min="{{ data_minima }}">
+          <div id="dateAlertWrongDay" style="display: none; color: #f87171; font-size: 0.84rem; margin-top: 8px; font-weight: 600;">
+            ⚠️ Este dia não é Sexta nem Sábado. Por favor, escolha uma Sexta-feira ou Sábado.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btnPrev2">&larr; Voltar aos Serviços</button>
+        <button type="button" class="btn btn-primary" id="btnNext2" disabled>
+          Ver Horários Livres &rarr;
+        </button>
+      </div>
+    </section>
+
+    <!-- PASSO 3: Escolha do Horário -->
+    <section class="step-section" data-step="3" id="step3">
+      <div class="step-header">
+        <h3>⏰ Escolha o Horário</h3>
+        <p>Os horários em verde estão livres para você reservar:</p>
+      </div>
+
+      <!-- Legenda Visual -->
+      <div class="slots-legend">
+        <div class="legend-item">
+          <span class="dot dot-disponivel"></span>
+          <span>Disponível</span>
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-ocupado"></span>
+          <span>Ocupado</span>
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-bloqueado"></span>
+          <span>Indisponível</span>
+        </div>
+      </div>
+
+      <!-- Estado de Carregamento -->
+      <div id="slotsLoading" style="display: none; text-align: center; padding: 30px; color: var(--gold);">
+        <p>🔄 Buscando horários disponíveis em tempo real...</p>
+      </div>
+
+      <div id="slotsEmpty" style="display: none; text-align: center; padding: 30px;"></div>
+
+      <!-- Grade de Horários -->
+      <div class="slots-grid" id="slotsGrid"></div>
+
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btnPrev3">&larr; Alterar Data</button>
+        <button type="button" class="btn btn-primary" id="btnNext3" disabled>
+          Preencher Meus Dados &rarr;
+        </button>
+      </div>
+    </section>
+
+    <!-- PASSO 4: Dados do Cliente & Resumo -->
+    <section class="step-section" data-step="4" id="step4">
+      <div class="step-header">
+        <h3>📝 Seus Dados e Confirmação</h3>
+        <p>Informe seu nome e WhatsApp para garantirmos sua vaga na agenda:</p>
+      </div>
+
+      <div class="customer-form-wrap">
+        <!-- Formulário do Cliente -->
+        <form id="bookingForm" action="{{ url_for('agendar') }}" method="POST">
+          <!-- Campos Ocultos com o estado do agendamento -->
+          <input type="hidden" name="servico_id" id="formServicoId">
+          <input type="hidden" name="data" id="formData">
+          <input type="hidden" name="horario" id="formHorario">
+
+          <div class="form-group">
+            <label for="clienteNome">Nome Completo *</label>
+            <input type="text" id="clienteNome" name="cliente" class="form-control" placeholder="Ex: João da Silva" required>
+          </div>
+
+          <div class="form-group">
+            <label for="clienteTelefone">Celular / WhatsApp *</label>
+            <input type="tel" id="clienteTelefone" name="telefone" class="form-control" placeholder="(11) 99999-9999" required>
+          </div>
+
+          <div class="form-group">
+            <label for="clienteObservacoes">Alguma observação especial? (Opcional)</label>
+            <textarea id="clienteObservacoes" name="observacoes" class="form-control" rows="2" placeholder="Ex: Prefiro degradê navalhado bem alto"></textarea>
+          </div>
+
+          <div class="step-actions" style="margin-top: 20px; border-top: none; padding-top: 0;">
+            <button type="button" class="btn btn-secondary" id="btnPrev4">&larr; Voltar Horários</button>
+            <button type="submit" class="btn btn-primary btn-confirm" id="btnFinalizar">
+              CONFIRMAR AGENDAMENTO ✅
+            </button>
+          </div>
+        </form>
+
+        <!-- Resumo Visual do Agendamento -->
+        <div class="summary-box">
+          <div class="summary-header">
+            <span>💈 {{ barbearia_nome }}</span>
+            <span style="font-size: 0.75rem; color: var(--gold); border: 1px solid var(--gold); padding: 2px 6px; border-radius: 4px;">RESUMO</span>
+          </div>
+
+          <div class="summary-item">
+            <span class="label">Serviço</span>
+            <span class="value" id="summaryServico">Corte de Cabelo</span>
+          </div>
+
+          <div class="summary-item">
+            <span class="label">Data</span>
+            <span class="value" id="summaryData">--/--/----</span>
+          </div>
+
+          <div class="summary-item">
+            <span class="label">Horário</span>
+            <span class="value" id="summaryHorario">--:--</span>
+          </div>
+
+          <div class="summary-total">
+            <span>Valor Total</span>
+            <span class="total-price" id="summaryTotal">R$ 0,00</span>
+          </div>
+
+          <p style="font-size: 0.78rem; color: var(--text-dark); margin-top: 14px; line-height: 1.4;">
+            * Pagamento realizado diretamente na barbearia (dinheiro, PIX ou cartão).
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}

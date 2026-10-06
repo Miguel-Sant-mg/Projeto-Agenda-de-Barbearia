@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<!-- Chart.js local com fallback CDN -->
+<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+<script>
+  if (typeof Chart === 'undefined') {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>');
+  }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+
+  <!-- Menu Lateral / Sidebar -->
+  <aside class="admin-sidebar">
+    <div style="padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border);">
+      <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-dark); letter-spacing: 0.5px;">Painel Barbeiro</div>
+      <div style="font-weight: 700; color: var(--gold-light); font-size: 1.05rem;">{{ barbearia_nome }}</div>
+    </div>
+
+    <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+      <span>📊</span> Dashboard
+    </a>
+
+    <a href="{{ url_for('admin_agenda') }}" class="sidebar-link {% if request.endpoint == 'admin_agenda' %}active{% endif %}">
+      <span>📅</span> Agenda
+    </a>
+
+    <a href="{{ url_for('admin_faturamento') }}" class="sidebar-link {% if request.endpoint == 'admin_faturamento' %}active{% endif %}">
+      <span>💰</span> Faturamento
+    </a>
+
+    <a href="{{ url_for('admin_clientes') }}" class="sidebar-link {% if request.endpoint == 'admin_clientes' %}active{% endif %}">
+      <span>👥</span> Clientes
+    </a>
+
+    <a href="{{ url_for('admin_config') }}" class="sidebar-link {% if request.endpoint == 'admin_config' %}active{% endif %}">
+      <span>⚙️</span> Horários & Config
+    </a>
+
+    <div class="sidebar-bottom">
+      <a href="{{ url_for('index') }}" target="_blank" class="sidebar-link" style="color: var(--text-muted); font-size: 0.85rem;">
+        <span>🌐</span> Ver Site Público &nearr;
+      </a>
+      <a href="{{ url_for('logout_view') }}" class="sidebar-link" style="color: #f87171; font-size: 0.85rem;">
+        <span>🚪</span> Sair da Conta
+      </a>
+    </div>
+  </aside>
+
+  <!-- Área de Conteúdo Administrativo -->
+  <main class="admin-content">
+    {% block admin_body %}{% endblock %}
+  </main>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% block admin_extra_js %}{% endblock %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

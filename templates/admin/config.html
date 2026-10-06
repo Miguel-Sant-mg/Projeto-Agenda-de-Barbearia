@@ -1,0 +1,304 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Horários e Configurações - {{ barbearia_nome }}{% endblock %}
+
+{% block admin_body %}
+<div class="admin-header">
+  <div>
+    <h1>Horários e Configurações</h1>
+    <p>Personalize os horários de funcionamento da barbearia, bloqueie intervalos e gerencie a tabela de preços dos serviços.</p>
+  </div>
+</div>
+
+<div class="config-grid">
+  
+  <!-- Coluna 1: Horários de Atendimento e Barbearia -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>⏰ Horários de Funcionamento</span>
+      </div>
+    </div>
+
+    <form action="{{ url_for('admin_config_horarios') }}" method="POST">
+      <div class="form-group">
+        <label>Nome da Barbearia</label>
+        <input type="text" name="nome_barbearia" class="form-control" value="{{ configs.nome_barbearia or 'Arte de Favela' }}" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label>Horário de Abertura</label>
+          <input type="text" name="horario_abertura" class="form-control" value="{{ configs.horario_abertura or '08:00' }}" placeholder="08:00" required>
+        </div>
+
+        <div class="form-group">
+          <label>Horário de Fechamento</label>
+          <input type="text" name="horario_fechamento" class="form-control" value="{{ configs.horario_fechamento or '19:00' }}" placeholder="19:00" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Intervalo entre Atendimentos (Minutos)</label>
+        <select name="intervalo_minutos" class="form-control">
+          <option value="20" {% if configs.intervalo_minutos == '20' %}selected{% endif %}>20 minutos</option>
+          <option value="30" {% if configs.intervalo_minutos == '30' %}selected{% endif %}>30 minutos (Padrão)</option>
+          <option value="40" {% if configs.intervalo_minutos == '40' %}selected{% endif %}>40 minutos</option>
+          <option value="45" {% if configs.intervalo_minutos == '45' %}selected{% endif %}>45 minutos</option>
+          <option value="60" {% if configs.intervalo_minutos == '60' %}selected{% endif %}>60 minutos (1 hora)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Dias da Semana Abertos</label>
+        <div class="days-picker">
+          <label class="day-checkbox-label">
+            <input type="checkbox" name="dias_funcionamento" value="1" {% if 1 in dias_ativos %}checked{% endif %}> Seg
+          </label>
+          <label class="day-checkbox-label">
+            <input type="checkbox" name="dias_funcionamento" value="2" {% if 2 in dias_ativos %}checked{% endif %}> Ter
+          </label>
+          <label class="day-checkbox-label">
+            <input type="checkbox" name="dias_funcionamento" value="3" {% if 3 in dias_ativos %}checked{% endif %}> Qua
+          </label>
+          <label class="day-checkbox-label">
+            <input type="checkbox" name="dias_funcionamento" value="4" {% if 4 in dias_ativos %}checked{% endif %}> Qui
+          </label>
+          <label class="day-checkbox-label">
+            <input type="checkbox" name="dias_funcionamento" value="5" {% if 5 in dias_ativos %}checked{% endif %}> Sex
+          </label>
+          <label class="day-checkbox-label">
+            <input type="checkbox" name="dias_funcionamento" value="6" {% if 6 in dias_ativos %}checked{% endif %}> Sáb
+          </label>
+          <label class="day-checkbox-label">
+            <input type="checkbox" name="dias_funcionamento" value="0" {% if 0 in dias_ativos %}checked{% endif %}> Dom
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>WhatsApp da Barbearia (com DDD)</label>
+        <input type="text" name="telefone_whatsapp" class="form-control mask-phone" value="{{ configs.telefone_whatsapp or '(11) 99999-9999' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label>Endereço Completo</label>
+        <input type="text" name="endereco" class="form-control" value="{{ configs.endereco or 'Rua da Barbearia, 100' }}">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+        Salvar Horários e Informações
+      </button>
+    </form>
+  </div>
+
+  <!-- Coluna 2: Bloqueio de Horários Específicos -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>🔒 Bloquear Horário Específico</span>
+      </div>
+    </div>
+
+    <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 16px;">
+      Use esta ferramenta caso precise bloquear um horário na grade (ex: compromisso pessoal, almoço prolongado ou folga):
+    </p>
+
+    <form action="{{ url_for('admin_bloqueio_adicionar') }}" method="POST" style="margin-bottom: 24px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" name="data" class="form-control" value="{{ hoje }}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Horário</label>
+          <input type="text" name="horario" class="form-control" placeholder="15:00" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Motivo do Bloqueio</label>
+        <input type="text" name="motivo" class="form-control" placeholder="Ex: Compromisso externo / Manutenção">
+      </div>
+
+      <button type="submit" class="btn btn-secondary" style="width: 100%;">
+        Bloquear Este Horário
+      </button>
+    </form>
+
+    <!-- Lista de Bloqueios Futuros -->
+    <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Horários Bloqueados</h4>
+    
+    <div style="max-height: 220px; overflow-y: auto;">
+      {% if bloqueios %}
+        {% for b in bloqueios %}
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 0.88rem;">
+            <div>
+              <strong>{{ b.data|data_br }} às {{ b.horario }}h</strong>
+              <div style="color: var(--text-muted); font-size: 0.78rem;">{{ b.motivo }}</div>
+            </div>
+            <form action="{{ url_for('admin_bloqueio_remover') }}" method="POST">
+              <input type="hidden" name="bloqueio_id" value="{{ b.id }}">
+              <button type="submit" class="btn-icon" title="Liberar Horário" style="color: #f87171;">
+                ✕
+              </button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 16px;">
+          Nenhum horário bloqueado no momento.
+        </p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Gerenciamento de Serviços e Preços -->
+<div class="admin-card" style="margin-top: 24px;">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>✂️ Tabela de Serviços e Preços</span>
+    </div>
+    <button type="button" class="btn btn-primary" data-open-modal="modalNovoServico">
+      ➕ Novo Serviço
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Duração Estimada</th>
+          <th>Preço Atual</th>
+          <th>Status</th>
+          <th style="text-align: right;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in servicos %}
+          <tr>
+            <td>
+              <strong style="font-size: 1rem;">{{ s.nome }}</strong>
+            </td>
+            <td style="color: var(--text-muted); max-width: 320px;">
+              {{ s.descricao }}
+            </td>
+            <td>~{{ s.duracao_minutos }} minutos</td>
+            <td>
+              <strong style="color: var(--gold-light); font-size: 1.05rem;">{{ s.preco|moeda }}</strong>
+            </td>
+            <td>
+              {% if s.ativo == 1 %}
+                <span class="badge-status badge-Concluído">Ativo</span>
+              {% else %}
+                <span class="badge-status badge-Cancelado">Inativo</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right;">
+              <div class="action-btns" style="justify-content: flex-end;">
+                <!-- Botão Editar -->
+                <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" data-open-modal="modalEditarServico{{ s.id }}">
+                  Editar Preço
+                </button>
+
+                <!-- Botão Ativar / Desativar -->
+                <form action="{{ url_for('admin_config_servico_toggle') }}" method="POST" style="display: inline;">
+                  <input type="hidden" name="servico_id" value="{{ s.id }}">
+                  <button type="submit" class="btn-icon" title="{% if s.ativo == 1 %}Desativar{% else %}Ativar{% endif %}">
+                    {% if s.ativo == 1 %}👁️{% else %}🚫{% endif %}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Modal Editar Serviço -->
+          <div class="modal-overlay" id="modalEditarServico{{ s.id }}">
+            <div class="modal-box">
+              <div class="modal-header">
+                <h3>✏️ Editar: {{ s.nome }}</h3>
+                <button type="button" class="modal-close" data-close-modal>&times;</button>
+              </div>
+
+              <form action="{{ url_for('admin_config_servico_salvar') }}" method="POST">
+                <input type="hidden" name="servico_id" value="{{ s.id }}">
+
+                <div class="form-group">
+                  <label>Nome do Serviço *</label>
+                  <input type="text" name="nome" class="form-control" value="{{ s.nome }}" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Descrição detalhada</label>
+                  <textarea name="descricao" class="form-control" rows="2">{{ s.descricao }}</textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                  <div class="form-group">
+                    <label>Preço (R$) *</label>
+                    <input type="text" name="preco" class="form-control" value="{{ '%.2f'|format(s.preco) }}" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Duração (minutos) *</label>
+                    <input type="number" name="duracao" class="form-control" value="{{ s.duracao_minutos }}" required>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px;">
+                  Salvar Alterações
+                </button>
+              </form>
+            </div>
+          </div>
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Novo Serviço -->
+<div class="modal-overlay" id="modalNovoServico">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>➕ Adicionar Novo Serviço</h3>
+      <button type="button" class="modal-close" data-close-modal>&times;</button>
+    </div>
+
+    <form action="{{ url_for('admin_config_servico_salvar') }}" method="POST">
+      <div class="form-group">
+        <label>Nome do Serviço *</label>
+        <input type="text" name="nome" class="form-control" placeholder="Ex: Pigmentação de Barba" required>
+      </div>
+
+      <div class="form-group">
+        <label>Descrição</label>
+        <textarea name="descricao" class="form-control" rows="2" placeholder="O que está incluso nesse serviço..."></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label>Preço (R$) *</label>
+          <input type="text" name="preco" class="form-control" placeholder="40.00" required>
+        </div>
+
+        <div class="form-group">
+          <label>Duração (minutos) *</label>
+          <input type="number" name="duracao" class="form-control" value="30" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px;">
+        Criar Serviço
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Faturamento e Relatórios - {{ barbearia_nome }}{% endblock %}
+
+{% block admin_body %}
+<div class="admin-header">
+  <div>
+    <h1>💰 Faturamento e Relatórios</h1>
+    <p>Acompanhe a receita da barbearia atualizada de acordo com os dias e horários marcados.</p>
+  </div>
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <span class="live-pill" id="fatLiveBadge">
+      <span class="pulse-dot"></span> Ao vivo
+    </span>
+  </div>
+</div>
+
+<!-- Métricas Principais de Receita -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Faturamento Hoje</span>
+      <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">💵</div>
+    </div>
+    <div class="metric-val" id="metricFatHoje" style="color: #34d399;">{{ dados.fat_hoje|moeda }}</div>
+    <div class="metric-sub">agendamentos de hoje</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Faturamento Semana</span>
+      <div class="metric-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">📊</div>
+    </div>
+    <div class="metric-val" id="metricFatSemana" style="color: #60a5fa;">{{ dados.fat_semana|moeda }}</div>
+    <div class="metric-sub">desta semana</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Faturamento Mês</span>
+      <div class="metric-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--gold-light);">🏆</div>
+    </div>
+    <div class="metric-val" id="metricFatMes" style="color: var(--gold-light);">{{ dados.fat_mes|moeda }}</div>
+    <div class="metric-sub">{{ dados.total_concluidos_mes }} agendamentos no mês</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Faturamento Total</span>
+      <div class="metric-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">💎</div>
+    </div>
+    <div class="metric-val" id="metricFatTotal" style="color: #c084fc;">{{ dados.fat_total_geral|moeda }}</div>
+    <div class="metric-sub">todos os agendamentos</div>
+  </div>
+</div>
+
+<!-- Barra de Controles e Filtros do Gráfico -->
+<div class="admin-card" style="margin-bottom: 24px;">
+  <div class="fat-controls-bar">
+    <div class="fat-toggle-group">
+      <span style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">Visualização:</span>
+      <button type="button" class="btn-fat-toggle active" id="btnModoDia" onclick="alternarModoGrafico('dia')">
+        📅 Por Dia
+      </button>
+      <button type="button" class="btn-fat-toggle" id="btnModoHorario" onclick="alternarModoGrafico('horario')">
+        ⏰ Por Horário Marcado
+      </button>
+    </div>
+
+    <!-- Subfiltros para Modo Dia -->
+    <div id="controlesModoDia" class="fat-subcontrols">
+      <button type="button" class="btn-subfilter active" id="btnFiltro7Dias" onclick="mudarPeriodoDias('ultimos7')">
+        Últimos 7 Dias
+      </button>
+      <button type="button" class="btn-subfilter" id="btnFiltroProx7Dias" onclick="mudarPeriodoDias('proximos7')">
+        Hoje + Próximos 7 Dias
+      </button>
+    </div>
+
+    <!-- Subfiltros para Modo Horário -->
+    <div id="controlesModoHorario" class="fat-subcontrols" style="display: none;">
+      <button type="button" class="btn-subfilter active" id="btnHorarioDia" onclick="mudarFiltroHorario('dia')">
+        Horários da Data Selecionada
+      </button>
+      <button type="button" class="btn-subfilter" id="btnHorarioGeral" onclick="mudarFiltroHorario('geral')">
+        Horários Geral (Todos os dias)
+      </button>
+    </div>
+
+    <!-- Seletor de Data -->
+    <div class="fat-date-selector">
+      <label for="inputDataFaturamento" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+        Data Específica:
+      </label>
+      <input type="date" id="inputDataFaturamento" class="form-control-sm" value="{{ dados.data_selecionada }}" onchange="filtrarPorData(this.value)">
+    </div>
+  </div>
+
+  <!-- Gráfico Principal -->
+  <div class="admin-card-header" style="border: none; padding-bottom: 8px;">
+    <div class="admin-card-title">
+      <span id="tituloGraficoPrincipal">📈 Evolução do Faturamento por Dia</span>
+    </div>
+    <span id="subtituloGraficoPrincipal" style="font-size: 0.82rem; color: var(--text-muted);">
+      Atualizado automaticamente com novos agendamentos
+    </span>
+  </div>
+  <div class="chart-container" style="height: 320px; position: relative;">
+    <canvas id="chartFaturamentoPrincipal"></canvas>
+  </div>
+</div>
+
+<!-- Grade Inferior: Detalhes do Dia e Distribuição por Serviço -->
+<div class="fat-grid">
+  <!-- Detalhes dos Agendamentos do Dia Selecionado -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>📋 Agendamentos do Dia: <strong id="lblDataSelecionada" style="color: var(--gold-light);">{{ dados.data_selecionada }}</strong></span>
+      </div>
+      <div id="lblTotalDia" style="font-weight: 700; color: #34d399; font-size: 1.05rem;">
+        {{ dados.fat_dia_selecionado|moeda }}
+      </div>
+    </div>
+
+    <div id="containerAgendamentosDia">
+      {% if dados.agendamentos_dia %}
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Horário</th>
+                <th>Cliente</th>
+                <th>Serviço</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAgendamentosDia">
+              {% for ag in dados.agendamentos_dia %}
+                <tr>
+                  <td><strong style="color: var(--gold-light);">{{ ag.horario }}</strong></td>
+                  <td>{{ ag.cliente or ag.cliente_nome }}</td>
+                  <td>{{ ag.servico_nome }}</td>
+                  <td style="color: #34d399; font-weight: 600;">{{ ag.valor|moeda }}</td>
+                  <td>
+                    <span class="badge-status badge-{{ ag.status|lower }}">
+                      {{ ag.status }}
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div id="msgSemAgendamentosDia" style="text-align: center; color: var(--text-muted); padding: 36px 0;">
+          Nenhum agendamento ativo registrado para este dia.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Distribuição de Serviços do Mês -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>🎯 Serviços no Mês</span>
+      </div>
+    </div>
+    <div class="chart-container" style="height: 180px; margin-bottom: 14px;">
+      <canvas id="chartServicosPizza"></canvas>
+    </div>
+
+    <!-- Lista de Contagem por Serviço -->
+    <ul class="services-list-stat" id="listaServicosStats">
+      {% if dados.servicos_stats %}
+        {% for s in dados.servicos_stats %}
+          <li class="service-stat-item">
+            <div class="service-stat-info">
+              <span class="service-stat-badge">{{ s.qtd }}x</span>
+              <span style="font-weight: 500;">{{ s.servico_nome }}</span>
+            </div>
+            <strong style="color: var(--gold-light);">{{ s.total_valor|moeda }}</strong>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li style="text-align: center; color: var(--text-dark); padding: 20px 0;">
+          Nenhum serviço registrado este mês.
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+  // Dados iniciais fornecidos pelo backend Flask
+  window.dadosFaturamento = {{ dados|tojson }};
+</script>
+{% endblock %}

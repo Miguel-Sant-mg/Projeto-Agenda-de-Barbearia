@@ -1,0 +1,135 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Clientes Cadastrados - {{ barbearia_nome }}{% endblock %}
+
+{% block admin_body %}
+<div class="admin-header">
+  <div>
+    <h1>Base de Clientes</h1>
+    <p>Consulte o histórico de visitas, serviços preferidos e contatos dos clientes da barbearia.</p>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>👥 Clientes Cadastrados ({{ clientes|length }})</span>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>WhatsApp</th>
+          <th style="text-align: center;">Agendamentos</th>
+          <th>Última Visita</th>
+          <th>Serviço Favorito</th>
+          <th style="text-align: right;">Histórico</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if clientes %}
+          {% for c in clientes %}
+            <tr>
+              <td>
+                <span style="font-weight: 700; font-size: 0.98rem;">{{ c.nome }}</span>
+              </td>
+              <td>
+                {% set tel_limpo = c.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') %}
+                <a href="https://wa.me/55{{ tel_limpo }}?text=Ol%C3%A1%20{{ c.nome|urlencode }}!%20Como%20vai?%20Falamos%20da%20Barbearia%20Arte%20de%20Favela." 
+                   target="_blank" rel="noopener noreferrer" class="btn-whats-mini">
+                  💬 {{ c.telefone }}
+                </a>
+              </td>
+              <td style="text-align: center;">
+                <span class="badge-status badge-Confirmado" style="font-size: 0.85rem;">
+                  {{ c.total_agendamentos }}
+                </span>
+              </td>
+              <td>
+                {% if c.ultimo_atendimento %}
+                  {{ c.ultimo_atendimento|data_br }}
+                {% else %}
+                  <span style="color: var(--text-dark);">Nunca</span>
+                {% endif %}
+              </td>
+              <td>
+                <span style="color: var(--gold-light); font-weight: 500;">
+                  {{ c.servico_favorito or '—' }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <button type="button" class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;" data-open-modal="modalHistorico{{ c.id }}">
+                  Ver Histórico &rarr;
+                </button>
+              </td>
+            </tr>
+
+            <!-- Modal Histórico Individual do Cliente -->
+            <div class="modal-overlay" id="modalHistorico{{ c.id }}">
+              <div class="modal-box" style="max-width: 580px;">
+                <div class="modal-header">
+                  <h3>📜 Histórico: {{ c.nome }}</h3>
+                  <button type="button" class="modal-close" data-close-modal>&times;</button>
+                </div>
+
+                <div style="margin-bottom: 16px; font-size: 0.88rem; color: var(--text-muted);">
+                  WhatsApp: <strong>{{ c.telefone }}</strong> &bull; Total de agendamentos: <strong>{{ c.total_agendamentos }}</strong>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="data-table" style="font-size: 0.85rem;">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Serviço</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% if c.historico %}
+                        {% for h in c.historico %}
+                          <tr>
+                            <td>{{ h.data|data_br }}</td>
+                            <td>{{ h.horario }}h</td>
+                            <td>{{ h.servico_nome }}</td>
+                            <td>{{ h.valor|moeda }}</td>
+                            <td>
+                              <span class="badge-status badge-{{ h.status }}">{{ h.status }}</span>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        <tr>
+                          <td colspan="5" style="text-align: center; color: var(--text-dark); padding: 14px;">
+                            Nenhum agendamento gravado ainda.
+                          </td>
+                        </tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style="margin-top: 20px; text-align: right;">
+                  <button type="button" class="btn btn-secondary" data-close-modal>Fechar</button>
+                </div>
+              </div>
+            </div>
+
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dark);">
+              Nenhum cliente cadastrado ainda. Conforme os clientes realizarem agendamentos, eles aparecerão aqui automaticamente.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

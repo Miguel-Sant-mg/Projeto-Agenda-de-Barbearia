@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ barbearia_nome }} - Agendamento Online{% endblock %}</title>
+  <meta name="description" content="Agendamento online rápido e prático para a Barbearia Arte de Favela. Escolha seu corte, barba ou combo e reserve seu horário.">
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Estilos Globais -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Barra de Navegação -->
+  <header class="navbar">
+    <div class="container nav-wrapper">
+      <a href="{{ url_for('index') }}" class="nav-brand">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="{{ barbearia_nome }}">
+        <span class="nav-brand-title">ARTE DE <span style="color: var(--gold-light);">FAVELA</span></span>
+      </a>
+      
+      <div class="nav-actions">
+        {% if session.get('usuario_id') %}
+          <a href="{{ url_for('admin_dashboard') }}" class="btn-nav-admin">
+            ⚙️ Painel Barbeiro
+          </a>
+          <a href="{{ url_for('logout_view') }}" class="btn-nav-admin" style="color: #f87171;">
+            Sair
+          </a>
+        {% else %}
+          <a href="{{ url_for('login_view') }}" class="btn-nav-admin">
+            🔐 Acesso Barbeiro
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Mensagens Flash -->
+  <div class="container flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 {{ barbearia_nome }} &bull; Todos os direitos reservados.</p>
+      <p style="margin-top: 4px; font-size: 0.8rem; color: #64748b;">
+        {{ barbearia_endereco }} &bull; WhatsApp: {{ barbearia_whatsapp }}
+      </p>
+    </div>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

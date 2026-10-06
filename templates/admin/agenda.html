@@ -1,0 +1,201 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Agenda do Barbeiro - {{ barbearia_nome }}{% endblock %}
+
+{% block admin_body %}
+<div class="admin-header">
+  <div>
+    <h1>Agenda de Atendimentos</h1>
+    <p>Consulte, gerencie e altere o status dos agendamentos em tempo real.</p>
+  </div>
+
+  <button type="button" class="btn btn-primary" data-open-modal="modalNovoAgendamento">
+    ➕ Agendar Cliente
+  </button>
+</div>
+
+<!-- Card da Agenda -->
+<div class="admin-card">
+  <!-- Barra de Filtros Rápidos e Seletor de Data -->
+  <div class="admin-card-header">
+    <div class="filter-tabs">
+      <a href="{{ url_for('admin_agenda', filtro='proximos') }}" class="filter-tab {% if filtro == 'proximos' or not filtro %}active{% endif %}">
+        📅 Próximos
+      </a>
+      <a href="{{ url_for('admin_agenda', filtro='sexta') }}" class="filter-tab {% if filtro == 'sexta' %}active{% endif %}">
+        Sextas
+      </a>
+      <a href="{{ url_for('admin_agenda', filtro='sabado') }}" class="filter-tab {% if filtro == 'sabado' %}active{% endif %}">
+        Sábados
+      </a>
+      <a href="{{ url_for('admin_agenda', filtro='semana') }}" class="filter-tab {% if filtro == 'semana' %}active{% endif %}">
+        Esta Semana
+      </a>
+      <a href="{{ url_for('admin_agenda', filtro='mes') }}" class="filter-tab {% if filtro == 'mes' %}active{% endif %}">
+        Este Mês
+      </a>
+      <a href="{{ url_for('admin_agenda', filtro='hoje') }}" class="filter-tab {% if filtro == 'hoje' %}active{% endif %}">
+        Hoje
+      </a>
+      <a href="{{ url_for('admin_agenda', filtro='todos') }}" class="filter-tab {% if filtro == 'todos' %}active{% endif %}">
+        Todos
+      </a>
+    </div>
+
+    <!-- Filtro por Data Específica -->
+    <form action="{{ url_for('admin_agenda') }}" method="GET" style="display: flex; gap: 8px; align-items: center;">
+      <input type="hidden" name="filtro" value="data">
+      <input type="date" name="data" value="{{ data_especifica }}" class="form-control" style="padding: 6px 12px; font-size: 0.85rem; width: auto;">
+      <button type="submit" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;">
+        Filtrar Data
+      </button>
+    </form>
+  </div>
+
+  <!-- Tabela da Agenda -->
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Dia Marcado</th>
+          <th>Horário</th>
+          <th>Cliente</th>
+          <th>Número de Telefone / WhatsApp</th>
+          <th>Serviço</th>
+          <th>Valor</th>
+          <th>Status</th>
+          <th style="text-align: right;">Alterar Status</th>
+          <th style="text-align: center;">Excluir</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if agendamentos %}
+          {% for a in agendamentos %}
+            <tr>
+              <td>
+                <strong style="color: var(--text-main);">{{ a.data|data_extenso }}</strong>
+              </td>
+              <td>
+                <span style="color: var(--gold-light); font-weight: 800; font-size: 1.05rem;">
+                  {{ a.horario }}h
+                </span>
+              </td>
+              <td>
+                <span style="font-weight: 700; font-size: 1rem; color: #fff;">{{ a.cliente }}</span>
+                {% if a.observacoes %}
+                  <div style="font-size: 0.76rem; color: var(--text-dark); margin-top: 2px;">
+                    📝 {{ a.observacoes }}
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                {% set tel_limpo = a.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') %}
+                <a href="https://wa.me/55{{ tel_limpo }}?text=Ol%C3%A1%20{{ a.cliente|urlencode }}!%20Falamos%20da%20Barbearia%20Arte%20de%20Favela%20sobre%20seu%20agendamento%20para%20{{ a.data|data_br }}%20%C3%A0s%20{{ a.horario }}h." 
+                   target="_blank" rel="noopener noreferrer" class="btn-whats-mini">
+                  💬 {{ a.telefone }}
+                </a>
+              </td>
+              <td>
+                <span style="font-weight: 500;">{{ a.servico_nome }}</span>
+              </td>
+              <td>
+                <strong>{{ a.valor|moeda }}</strong>
+              </td>
+              <td>
+                <span class="badge-status badge-{{ a.status }}">{{ a.status }}</span>
+              </td>
+              <td style="text-align: right;">
+                <!-- Formulário com dropdown de status rápido -->
+                <form action="{{ url_for('admin_agendamento_status') }}" method="POST" style="display: inline-flex; align-items: center; gap: 6px;">
+                  <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                  <select name="status" class="form-control" style="padding: 5px 8px; font-size: 0.8rem; width: auto; background: var(--bg-elevated);" onchange="this.form.submit()">
+                    <option value="Agendado" {% if a.status == 'Agendado' %}selected{% endif %}>Agendado</option>
+                    <option value="Confirmado" {% if a.status == 'Confirmado' %}selected{% endif %}>Confirmado</option>
+                    <option value="Concluído" {% if a.status == 'Concluído' %}selected{% endif %}>Concluído</option>
+                    <option value="Cancelado" {% if a.status == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+                  </select>
+                </form>
+              </td>
+              <td style="text-align: center;">
+                <form action="{{ url_for('admin_agendamento_excluir') }}" method="POST" onsubmit="return confirm('Deseja realmente excluir este agendamento?');" style="display: inline;">
+                  <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                  <button type="submit" class="btn-icon" style="color: #f87171;" title="Excluir Definitivamente">
+                    🗑️
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-dark);">
+              Nenhum agendamento encontrado para o filtro selecionado.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: Novo Agendamento Manual -->
+<div class="modal-overlay" id="modalNovoAgendamento">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>➕ Novo Agendamento</h3>
+      <button type="button" class="modal-close" data-close-modal>&times;</button>
+    </div>
+
+    <form action="{{ url_for('admin_agendamento_novo') }}" method="POST">
+      <div class="form-group">
+        <label>Nome do Cliente *</label>
+        <input type="text" name="cliente" class="form-control" required placeholder="Ex: Lucas Gabriel">
+      </div>
+
+      <div class="form-group">
+        <label>WhatsApp *</label>
+        <input type="tel" name="telefone" class="form-control mask-phone" required placeholder="(11) 99999-9999">
+      </div>
+
+      <div class="form-group">
+        <label>Serviço *</label>
+        <select name="servico_id" class="form-control" required>
+          {% for s in servicos %}
+            <option value="{{ s.id }}">{{ s.nome }} ({{ s.preco|moeda }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" name="data" class="form-control" value="{{ hoje }}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Horário *</label>
+          <input type="text" name="horario" class="form-control" placeholder="10:00" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Status Inicial</label>
+        <select name="status" class="form-control">
+          <option value="Confirmado" selected>Confirmado</option>
+          <option value="Agendado">Agendado</option>
+          <option value="Concluído">Concluído</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Observações</label>
+        <input type="text" name="observacoes" class="form-control" placeholder="Observações do atendimento">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+        Gravar Agendamento
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

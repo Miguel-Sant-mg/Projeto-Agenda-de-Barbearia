@@ -1,0 +1,18 @@
+{
+  "name": "Barbearia Arte de Favela",
+  "short_name": "Arte de Favela",
+  "description": "Agendamento online de cortes e barba na Barbearia Arte de Favela",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0d10",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "/static/img/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

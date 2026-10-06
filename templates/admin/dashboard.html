@@ -1,0 +1,232 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Dashboard - {{ barbearia_nome }}{% endblock %}
+
+{% block admin_body %}
+<div class="admin-header">
+  <div>
+    <h1>Visão Geral da Barbearia</h1>
+    <p>Acompanhe o movimento de hoje e os próximos clientes agendados.</p>
+  </div>
+
+  <div style="display: flex; gap: 10px;">
+    <button type="button" class="btn btn-primary" data-open-modal="modalNovoAgendamento">
+      ➕ Novo Agendamento
+    </button>
+  </div>
+</div>
+
+<!-- Métricas Principais -->
+<div class="metrics-grid">
+  <!-- Agendamentos Hoje -->
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Hoje</span>
+      <div class="metric-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--gold);">📅</div>
+    </div>
+    <div class="metric-val" id="dashStatHoje">{{ stats.agendamentos_hoje }}</div>
+    <div class="metric-sub">atendimentos marcados para hoje</div>
+  </div>
+
+  <!-- Total de Clientes -->
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Clientes</span>
+      <div class="metric-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">👥</div>
+    </div>
+    <div class="metric-val" id="dashStatClientes">{{ stats.total_clientes }}</div>
+    <div class="metric-sub">clientes na base de dados</div>
+  </div>
+
+  <!-- Faturamento do Mês -->
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Faturamento do Mês</span>
+      <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">💵</div>
+    </div>
+    <div class="metric-val" id="dashStatFatMes" style="color: #34d399;">{{ stats.faturamento_mes|moeda }}</div>
+    <div class="metric-sub">atualizado com cada agendamento</div>
+  </div>
+
+  <!-- Faturamento Total Confirmado -->
+  <div class="metric-card">
+    <div class="metric-top">
+      <span class="metric-title">Total Confirmado</span>
+      <div class="metric-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">📈</div>
+    </div>
+    <div class="metric-val" id="dashStatFatTotal" style="color: var(--gold-light);">{{ stats.faturamento_total_confirmado|moeda }}</div>
+    <div class="metric-sub">receita total dos agendamentos</div>
+  </div>
+</div>
+
+<!-- Tabela: Próximos Atendimentos Confirmados -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>📅 Próximos Agendamentos Confirmados ({{ agendamentos_proximos|length }})</span>
+      <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 999px; margin-left: 10px; font-weight: 600;">
+        🟢 Atualização Automática
+      </span>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <a href="{{ url_for('admin_agenda', filtro='proximos') }}" class="btn-nav-admin" style="font-size: 0.82rem;">
+        Ver Todos na Agenda &rarr;
+      </a>
+    </div>
+  </div>
+
+  <!-- Alerta de novo agendamento via polling -->
+  <div id="liveNewBookingAlert" style="display: none; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 600;">
+    🔔 Novo agendamento detectado! Atualizando lista...
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table" id="dashboardTableAgendamentos">
+      <thead>
+        <tr>
+          <th>Dia Marcado</th>
+          <th>Horário</th>
+          <th>Cliente</th>
+          <th>Número de Telefone / WhatsApp</th>
+          <th>Serviço</th>
+          <th>Valor</th>
+          <th>Status</th>
+          <th style="text-align: right;">Ações Rápidas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if agendamentos_proximos %}
+          {% for a in agendamentos_proximos %}
+            <tr>
+              <td>
+                <strong style="color: var(--text-main);">{{ a.data|data_extenso }}</strong>
+              </td>
+              <td>
+                <span style="color: var(--gold-light); font-weight: 800; font-size: 1.05rem;">
+                  {{ a.horario }}h
+                </span>
+              </td>
+              <td>
+                <span style="font-weight: 700; font-size: 1rem; color: #fff;">{{ a.cliente }}</span>
+                {% if a.observacoes %}
+                  <div style="font-size: 0.76rem; color: var(--text-dark);">Obs: {{ a.observacoes }}</div>
+                {% endif %}
+              </td>
+              <td>
+                {% set tel_limpo = a.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') %}
+                <a href="https://wa.me/55{{ tel_limpo }}?text=Ol%C3%A1%20{{ a.cliente|urlencode }}!%20Confirmamos%20seu%20hor%C3%A1rio%20na%20Barbearia%20Arte%20de%20Favela%20para%20{{ a.data|data_br }}%20%C3%A0s%20{{ a.horario }}h." 
+                   target="_blank" rel="noopener noreferrer" class="btn-whats-mini">
+                  💬 {{ a.telefone }}
+                </a>
+              </td>
+              <td>{{ a.servico_nome }}</td>
+              <td><strong>{{ a.valor|moeda }}</strong></td>
+              <td>
+                <span class="badge-status badge-{{ a.status }}">{{ a.status }}</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="action-btns" style="justify-content: flex-end;">
+                  <!-- Alterar Status Rápido -->
+                  <form action="{{ url_for('admin_agendamento_status') }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                    {% if a.status != 'Concluído' %}
+                      <input type="hidden" name="status" value="Concluído">
+                      <button type="submit" class="btn-icon" title="Marcar como Concluído" style="color: #34d399;">
+                        ✓
+                      </button>
+                    {% else %}
+                      <input type="hidden" name="status" value="Confirmado">
+                      <button type="submit" class="btn-icon" title="Reabrir / Marcar Confirmado">
+                        ↺
+                      </button>
+                    {% endif %}
+                  </form>
+
+                  {% if a.status != 'Cancelado' %}
+                  <form action="{{ url_for('admin_agendamento_status') }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                    <input type="hidden" name="status" value="Cancelado">
+                    <button type="submit" class="btn-icon" title="Cancelar Agendamento" style="color: #f87171;">
+                      ✕
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 34px; color: var(--text-dark);">
+              Nenhum próximo agendamento encontrado no momento.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: Novo Agendamento Manual -->
+<div class="modal-overlay" id="modalNovoAgendamento">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>➕ Novo Agendamento Manual</h3>
+      <button type="button" class="modal-close" data-close-modal>&times;</button>
+    </div>
+
+    <form action="{{ url_for('admin_agendamento_novo') }}" method="POST">
+      <div class="form-group">
+        <label>Nome do Cliente *</label>
+        <input type="text" name="cliente" class="form-control" required placeholder="Ex: Roberto Carlos">
+      </div>
+
+      <div class="form-group">
+        <label>WhatsApp / Celular *</label>
+        <input type="tel" name="telefone" class="form-control mask-phone" required placeholder="(11) 99999-9999">
+      </div>
+
+      <div class="form-group">
+        <label>Serviço *</label>
+        <select name="servico_id" class="form-control" required>
+          <!-- Será preenchido via rota / carregado -->
+          <option value="1">Corte de Cabelo (R$ 35,00)</option>
+          <option value="2">Sobrancelha (R$ 15,00)</option>
+          <option value="3">Barba (R$ 30,00)</option>
+          <option value="4">Combo Arte de Favela (R$ 55,00)</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" name="data" class="form-control" value="{{ hoje }}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Horário *</label>
+          <input type="text" name="horario" class="form-control" placeholder="14:30" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Status Inicial</label>
+        <select name="status" class="form-control">
+          <option value="Confirmado" selected>Confirmado</option>
+          <option value="Agendado">Agendado</option>
+          <option value="Concluído">Concluído</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Observações (opcional)</label>
+        <input type="text" name="observacoes" class="form-control" placeholder="Cliente de balcão / ligação">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+        Salvar Agendamento
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
