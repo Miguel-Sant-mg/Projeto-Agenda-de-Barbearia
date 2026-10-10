@@ -29,9 +29,9 @@ class ArteDeFavelaTestCase(unittest.TestCase):
     def test_01_seed_dados_iniciais(self):
         """Verifica se os servicos padrao e o usuario admin com hash foram criados"""
         conexao = database.conectar_banco()
-        admin = conexao.execute("SELECT * FROM usuarios WHERE nome = 'admin'").fetchone()
+        admin = conexao.execute("SELECT * FROM usuarios WHERE nome = 'Carlos_Alberto'").fetchone()
         self.assertIsNotNone(admin)
-        self.assertTrue(check_password_hash(admin['senha'], 'admin123'))
+        self.assertTrue(check_password_hash(admin['senha'], 'CarlosAlt2018'))
 
         servicos = conexao.execute("SELECT COUNT(*) as total FROM servicos").fetchone()
         self.assertGreaterEqual(servicos['total'], 4)
@@ -43,10 +43,10 @@ class ArteDeFavelaTestCase(unittest.TestCase):
 
     def test_02_autenticacao_admin(self):
         """Testa login com sucesso e falha, alem da protecao de rotas"""
-        resp_fail = self.client.post('/login', json={'nome': 'admin', 'senha': 'errada123'})
+        resp_fail = self.client.post('/login', json={'nome': 'Carlos_Alberto', 'senha': 'errada123'})
         self.assertEqual(resp_fail.status_code, 401)
 
-        resp_ok = self.client.post('/login', json={'nome': 'admin', 'senha': 'admin123'})
+        resp_ok = self.client.post('/login', json={'nome': 'Carlos_Alberto', 'senha': 'CarlosAlt2018'})
         self.assertEqual(resp_ok.status_code, 200)
 
         client_deslogado = app.test_client()

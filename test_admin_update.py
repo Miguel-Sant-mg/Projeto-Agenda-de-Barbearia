@@ -13,7 +13,7 @@ def test_admin_update():
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
     # 2. Fazer login como admin
-    login_data = urllib.parse.urlencode({"nome": "admin", "senha": "admin123"}).encode('utf-8')
+    login_data = urllib.parse.urlencode({"nome": "Carlos_Alberto", "senha": "CarlosAlt2018"}).encode('utf-8')
     req_login = urllib.request.Request(f"{BASE_URL}/login", data=login_data)
     with opener.open(req_login) as resp:
         assert resp.status == 200

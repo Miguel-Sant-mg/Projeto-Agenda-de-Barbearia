@@ -73,8 +73,8 @@ def test_e2e():
 
     # 6. Autenticacao do Administrador
     login_payload = json.dumps({
-        "nome": "admin",
-        "senha": "admin123"
+        "nome": "Carlos_Alberto",
+        "senha": "CarlosAlt2018"
     }).encode('utf-8')
     req_login = urllib.request.Request(
         f"{BASE_URL}/login",

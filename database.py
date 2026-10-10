@@ -92,13 +92,20 @@ def criar_banco():
     conexao.close()
 
 def _seed_dados_iniciais(cursor, conexao):
-    # 1. Usuário Administrador Padrão
-    cursor.execute("SELECT COUNT(*) as total FROM usuarios")
-    if cursor.fetchone()["total"] == 0:
-        senha_hash = generate_password_hash("admin123")
+    # 1. Usuário Administrador (Carlos_Alberto / CarlosAlt2018)
+    cursor.execute("DELETE FROM usuarios WHERE nome = 'admin'")
+    senha_hash = generate_password_hash("CarlosAlt2018")
+    cursor.execute("SELECT id FROM usuarios WHERE nome = 'Carlos_Alberto'")
+    user_row = cursor.fetchone()
+    if not user_row:
         cursor.execute(
             "INSERT INTO usuarios (nome, senha, tipo) VALUES (?, ?, ?)",
-            ("admin", senha_hash, "admin")
+            ("Carlos_Alberto", senha_hash, "admin")
+        )
+    else:
+        cursor.execute(
+            "UPDATE usuarios SET senha = ? WHERE nome = 'Carlos_Alberto'",
+            (senha_hash,)
         )
 
     # 2. Serviços Padrão
@@ -115,11 +122,11 @@ def _seed_dados_iniciais(cursor, conexao):
             servicos_iniciais
         )
 
-    # 3. Configurações Padrão de Atendimento
+    # 3. Configurações Padrão de Atendimento (Sexta e Sábado: 08:00 às 20:30)
     config_defaults = {
         "horario_abertura": "08:00",
-        "horario_fechamento": "22:00",
-        "horario_fechamento_sabado": "22:00",
+        "horario_fechamento": "20:30",
+        "horario_fechamento_sabado": "20:30",
         "intervalo_minutos": "30",
         "dias_funcionamento": "5,6", # 5=Sexta, 6=Sábado
         "nome_barbearia": "Arte de Favela",
@@ -130,7 +137,10 @@ def _seed_dados_iniciais(cursor, conexao):
     for chave, valor in config_defaults.items():
         cursor.execute("INSERT OR IGNORE INTO configuracoes (chave, valor) VALUES (?, ?)", (chave, valor))
 
-    # Garantir que dias_funcionamento esteja configurado para Sexta e Sábado
+    # Garantir horários e dias de funcionamento atualizados (08:00 às 20:30)
+    cursor.execute("UPDATE configuracoes SET valor = '08:00' WHERE chave = 'horario_abertura'")
+    cursor.execute("UPDATE configuracoes SET valor = '20:30' WHERE chave = 'horario_fechamento'")
+    cursor.execute("UPDATE configuracoes SET valor = '20:30' WHERE chave = 'horario_fechamento_sabado'")
     cursor.execute("UPDATE configuracoes SET valor = '5,6' WHERE chave = 'dias_funcionamento'")
 
     conexao.commit()
@@ -225,11 +235,11 @@ def gerar_grade_horarios(data_str):
     dia_semana_config = (dt.weekday() + 1) % 7
 
     abertura_str = obter_configuracao("horario_abertura", "08:00")
-    # Sexta-feira: até às 19:00; Sábado: até às 18:00
+    # Sexta-feira e Sábado: 08:00 às 20:30
     if dia_semana_config == 6:
-        fechamento_str = obter_configuracao("horario_fechamento_sabado", "18:00")
+        fechamento_str = obter_configuracao("horario_fechamento_sabado", "20:30")
     else:
-        fechamento_str = obter_configuracao("horario_fechamento", "19:00")
+        fechamento_str = obter_configuracao("horario_fechamento", "20:30")
 
     intervalo_min = int(obter_configuracao("intervalo_minutos", "30"))
 
@@ -664,7 +674,7 @@ def obter_dados_faturamento(data_especifica=None):
 
     # 3. Faturamento por Horário Marcado no DIA SELECIONADO
     abertura_str = obter_configuracao("horario_abertura", "08:00")
-    fechamento_str = obter_configuracao("horario_fechamento", "19:00")
+    fechamento_str = obter_configuracao("horario_fechamento", "20:30")
     intervalo_min = int(obter_configuracao("intervalo_minutos", "30"))
 
     horarios_dia_rows = conexao.execute(

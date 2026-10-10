@@ -67,8 +67,8 @@ No próprio computador onde o servidor está rodando, abra o navegador e acesse:
 * **Painel Administrativo:** [http://localhost:5000/login](http://localhost:5000/login)
 
 > **Credenciais padrão do Barbeiro:**
-> * **Usuário:** `admin`
-> * **Senha:** `admin123`
+> * **Usuário:** `Carlos_Alberto`
+> * **Senha:** `CarlosAlt2018`
 
 ---
 
