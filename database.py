@@ -118,12 +118,12 @@ def _seed_dados_iniciais(cursor, conexao):
     # 3. Configurações Padrão de Atendimento
     config_defaults = {
         "horario_abertura": "08:00",
-        "horario_fechamento": "19:00",
-        "horario_fechamento_sabado": "18:00",
+        "horario_fechamento": "22:00",
+        "horario_fechamento_sabado": "22:00",
         "intervalo_minutos": "30",
         "dias_funcionamento": "5,6", # 5=Sexta, 6=Sábado
         "nome_barbearia": "Arte de Favela",
-        "telefone_whatsapp": "(11) 99999-9999",
+        "telefone_whatsapp": "(11) 98510-4901",
         "endereco": "Rua Principal, 123 - Favela Chic"
     }
 
