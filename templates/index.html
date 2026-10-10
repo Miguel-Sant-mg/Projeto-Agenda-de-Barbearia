@@ -39,6 +39,13 @@
     </div>
   </div>
 
+  <!-- Indicador Textual Compacto para Telas Mobile -->
+  <div class="stepper-mobile-current" id="stepperMobileCurrent" aria-live="polite">
+    <span class="stepper-step-count">Passo <strong id="stepperMobileNum">1</strong> de 4</span>
+    <span class="stepper-divider">&bull;</span>
+    <span class="stepper-mobile-name" id="stepperMobileLabel">Escolha o Serviço</span>
+  </div>
+
   <!-- Card Principal de Agendamento -->
   <div class="booking-card">
 
@@ -57,6 +64,8 @@
                data-preco="{{ servico.preco }}"
                data-descricao="{{ servico.descricao }}">
             
+            <div class="service-select-indicator" aria-hidden="true"></div>
+
             {% if "combo" in servico.nome.lower() %}
               <span class="service-badge-combo">Destaque VIP</span>
             {% endif %}
@@ -183,17 +192,17 @@
 
           <div class="form-group">
             <label for="clienteNome">Nome Completo *</label>
-            <input type="text" id="clienteNome" name="cliente" class="form-control" placeholder="Ex: João da Silva" required>
+            <input type="text" id="clienteNome" name="cliente" class="form-control" placeholder="Ex: João da Silva" required autocomplete="name" autocapitalize="words" autocorrect="off" enterkeyhint="next">
           </div>
 
           <div class="form-group">
             <label for="clienteTelefone">Celular / WhatsApp *</label>
-            <input type="tel" id="clienteTelefone" name="telefone" class="form-control" placeholder="(11) 99999-9999" required>
+            <input type="tel" id="clienteTelefone" name="telefone" class="form-control" placeholder="(11) 99999-9999" required inputmode="tel" autocomplete="tel" enterkeyhint="next">
           </div>
 
           <div class="form-group">
             <label for="clienteObservacoes">Alguma observação especial? (Opcional)</label>
-            <textarea id="clienteObservacoes" name="observacoes" class="form-control" rows="2" placeholder="Ex: Prefiro degradê navalhado bem alto"></textarea>
+            <textarea id="clienteObservacoes" name="observacoes" class="form-control" rows="2" placeholder="Ex: Prefiro degradê navalhado bem alto" enterkeyhint="done"></textarea>
           </div>
 
           <div class="step-actions" style="margin-top: 20px; border-top: none; padding-top: 0;">

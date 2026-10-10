@@ -81,7 +81,7 @@
   </div>
 
   <div class="table-responsive">
-    <table class="data-table" id="dashboardTableAgendamentos">
+    <table class="data-table mobile-cards" id="dashboardTableAgendamentos">
       <thead>
         <tr>
           <th>Dia Marcado</th>
@@ -98,33 +98,33 @@
         {% if agendamentos_proximos %}
           {% for a in agendamentos_proximos %}
             <tr>
-              <td>
+              <td data-label="Dia Marcado">
                 <strong style="color: var(--text-main);">{{ a.data|data_extenso }}</strong>
               </td>
-              <td>
+              <td data-label="Horário">
                 <span style="color: var(--gold-light); font-weight: 800; font-size: 1.05rem;">
                   {{ a.horario }}h
                 </span>
               </td>
-              <td>
+              <td data-label="Cliente">
                 <span style="font-weight: 700; font-size: 1rem; color: #fff;">{{ a.cliente }}</span>
                 {% if a.observacoes %}
                   <div style="font-size: 0.76rem; color: var(--text-dark);">Obs: {{ a.observacoes }}</div>
                 {% endif %}
               </td>
-              <td>
+              <td data-label="WhatsApp">
                 {% set tel_limpo = a.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') %}
                 <a href="https://wa.me/55{{ tel_limpo }}?text=Ol%C3%A1%20{{ a.cliente|urlencode }}!%20Confirmamos%20seu%20hor%C3%A1rio%20na%20Barbearia%20Arte%20de%20Favela%20para%20{{ a.data|data_br }}%20%C3%A0s%20{{ a.horario }}h." 
                    target="_blank" rel="noopener noreferrer" class="btn-whats-mini">
                   💬 {{ a.telefone }}
                 </a>
               </td>
-              <td>{{ a.servico_nome }}</td>
-              <td><strong>{{ a.valor|moeda }}</strong></td>
-              <td>
+              <td data-label="Serviço">{{ a.servico_nome }}</td>
+              <td data-label="Valor"><strong>{{ a.valor|moeda }}</strong></td>
+              <td data-label="Status">
                 <span class="badge-status badge-{{ a.status }}">{{ a.status }}</span>
               </td>
-              <td style="text-align: right;">
+              <td data-label="Ações" style="text-align: right;">
                 <div class="action-btns" style="justify-content: flex-end;">
                   <!-- Alterar Status Rápido -->
                   <form action="{{ url_for('admin_agendamento_status') }}" method="POST" style="display: inline;">
@@ -132,12 +132,12 @@
                     {% if a.status != 'Concluído' %}
                       <input type="hidden" name="status" value="Concluído">
                       <button type="submit" class="btn-icon" title="Marcar como Concluído" style="color: #34d399;">
-                        ✓
+                        ✓ Concluir
                       </button>
                     {% else %}
                       <input type="hidden" name="status" value="Confirmado">
                       <button type="submit" class="btn-icon" title="Reabrir / Marcar Confirmado">
-                        ↺
+                        ↺ Reabrir
                       </button>
                     {% endif %}
                   </form>
@@ -147,7 +147,7 @@
                     <input type="hidden" name="agendamento_id" value="{{ a.id }}">
                     <input type="hidden" name="status" value="Cancelado">
                     <button type="submit" class="btn-icon" title="Cancelar Agendamento" style="color: #f87171;">
-                      ✕
+                      ✕ Cancelar
                     </button>
                   </form>
                   {% endif %}

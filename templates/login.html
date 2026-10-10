@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container">
-  <div style="max-width: 420px; margin: 60px auto;">
+  <div class="login-box-wrapper">
     <div class="booking-card" style="padding: 36px 30px;">
       
       <div style="text-align: center; margin-bottom: 26px;">
@@ -18,15 +18,15 @@
       <form action="{{ url_for('login_view') }}" method="POST">
         <div class="form-group">
           <label for="adminNome">Usuário</label>
-          <input type="text" id="adminNome" name="nome" value="{{ nome or '' }}" class="form-control" placeholder="Seu nome de usuário" required autofocus>
+          <input type="text" id="adminNome" name="nome" value="{{ nome or '' }}" class="form-control" placeholder="Seu nome de usuário" required autofocus autocomplete="username" autocapitalize="none" autocorrect="off" enterkeyhint="next">
         </div>
 
         <div class="form-group">
           <label for="adminSenha">Senha</label>
-          <input type="password" id="adminSenha" name="senha" class="form-control" placeholder="••••••••" required>
+          <input type="password" id="adminSenha" name="senha" class="form-control" placeholder="••••••••" required autocomplete="current-password" enterkeyhint="go">
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 14px;">
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; min-height: 48px; font-size: 1rem;">
           Entrar no Painel &rarr;
         </button>
       </form>

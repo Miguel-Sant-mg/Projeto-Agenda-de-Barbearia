@@ -2,9 +2,20 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>{% block title %}{{ barbearia_nome }} - Agendamento Online{% endblock %}</title>
   <meta name="description" content="Agendamento online rápido e prático para a Barbearia Arte de Favela. Escolha seu corte, barba ou combo e reserve seu horário.">
+  <meta name="theme-color" content="#0c0d10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="{{ barbearia_nome }}">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- PWA & Favicons -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo.svg') }}">
   
   <!-- Google Fonts: Outfit & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,15 +38,18 @@
       
       <div class="nav-actions">
         {% if session.get('usuario_id') %}
-          <a href="{{ url_for('admin_dashboard') }}" class="btn-nav-admin">
-            ⚙️ Painel Barbeiro
+          <a href="{{ url_for('admin_dashboard') }}" class="btn-nav-admin" title="Painel do Barbeiro">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Painel</span>
           </a>
-          <a href="{{ url_for('logout_view') }}" class="btn-nav-admin" style="color: #f87171;">
-            Sair
+          <a href="{{ url_for('logout_view') }}" class="btn-nav-admin btn-nav-logout" title="Sair da Conta">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-label">Sair</span>
           </a>
         {% else %}
-          <a href="{{ url_for('login_view') }}" class="btn-nav-admin">
-            🔐 Acesso Barbeiro
+          <a href="{{ url_for('login_view') }}" class="btn-nav-admin" title="Acesso do Barbeiro">
+            <span class="nav-icon">🔐</span>
+            <span class="nav-label">Barbeiro</span>
           </a>
         {% endif %}
       </div>

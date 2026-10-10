@@ -9,18 +9,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalTriggers = document.querySelectorAll('[data-open-modal]');
   const modalCloses = document.querySelectorAll('[data-close-modal]');
 
+  function abrirModal(modal) {
+    if (!modal) return;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharModal(modal) {
+    if (!modal) return;
+    modal.classList.remove('active');
+    const remainingOpen = document.querySelectorAll('.modal-overlay.active');
+    if (remainingOpen.length === 0) {
+      document.body.style.overflow = '';
+    }
+  }
+
   modalTriggers.forEach(btn => {
     btn.addEventListener('click', () => {
       const modalId = btn.getAttribute('data-open-modal');
       const modal = document.getElementById(modalId);
-      if (modal) modal.classList.add('active');
+      abrirModal(modal);
     });
   });
 
   modalCloses.forEach(btn => {
     btn.addEventListener('click', () => {
       const modal = btn.closest('.modal-overlay');
-      if (modal) modal.classList.remove('active');
+      fecharModal(modal);
     });
   });
 
@@ -28,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
-        overlay.classList.remove('active');
+        fecharModal(overlay);
       }
     });
   });

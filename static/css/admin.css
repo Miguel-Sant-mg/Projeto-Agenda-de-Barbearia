@@ -317,7 +317,11 @@
   border-radius: var(--radius-md);
   width: 100%;
   max-width: 520px;
-  padding: 26px;
+  max-height: 88vh;
+  max-height: 88dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
   animation: fadeIn 0.25s ease;
 }
@@ -338,11 +342,22 @@
   background: none;
   border: none;
   color: var(--text-dark);
-  font-size: 1.4rem;
+  font-size: 1.6rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  border-radius: 8px;
+  transition: var(--transition);
 }
 
-.modal-close:hover {
+.modal-close:hover,
+.modal-close:active {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
   color: var(--text-main);
 }
 
@@ -557,62 +572,286 @@
   .admin-layout {
     flex-direction: column;
   }
+
+  .sidebar-header {
+    display: none !important;
+  }
+
   .admin-sidebar {
     width: 100%;
     flex-direction: row;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 10px 14px;
-    gap: 6px;
+    padding: 8px 12px;
+    gap: 8px;
+    background: rgba(17, 19, 23, 0.96);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 62px;
+    z-index: 90;
   }
+
+  .admin-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
   .sidebar-link {
     white-space: nowrap;
-    padding: 8px 12px;
+    padding: 8px 14px;
+    border-radius: 999px;
     font-size: 0.85rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.03);
   }
+
+  .sidebar-link.active {
+    background: var(--gold);
+    color: #000;
+    border-left: 1px solid var(--gold);
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+  }
+
   .sidebar-bottom {
     display: flex;
     margin-top: 0;
     padding-top: 0;
     border-top: none;
     gap: 6px;
+    flex-shrink: 0;
   }
+
   .fat-grid {
     grid-template-columns: 1fr;
   }
+
   .admin-content {
-    padding: 18px 12px;
-  }
-  .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    padding: 16px 12px;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.45rem;
+  }
+
+  .admin-header .btn {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+  }
+
+  .admin-card {
+    padding: 16px 12px;
+    margin-bottom: 20px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Abas de Filtro com Scroll Horizontal Fluido no Celular */
+  .filter-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 7px 12px;
+    font-size: 0.82rem;
+  }
+
+  /* Transformação de Tabelas em Cards no Celular */
+  .data-table.mobile-cards thead {
+    display: none;
+  }
+
+  .data-table.mobile-cards,
+  .data-table.mobile-cards tbody,
+  .data-table.mobile-cards tr,
+  .data-table.mobile-cards td {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table.mobile-cards tr {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    padding: 14px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .data-table.mobile-cards td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+  }
+
+  .data-table.mobile-cards td:last-child {
+    border-bottom: none;
+    padding-top: 10px;
+  }
+
+  .data-table.mobile-cards td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .data-table.mobile-cards td[data-label="Cliente"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .data-table.mobile-cards td[data-label="Cliente"]::before {
+    margin-bottom: 2px;
+  }
+
+  .data-table.mobile-cards td[data-label="WhatsApp"] .btn-whats-mini {
+    padding: 6px 12px;
+    font-size: 0.88rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .data-table.mobile-cards td[data-label="Ações"] .action-btns,
+  .data-table.mobile-cards td[data-label="Ação"] .action-btns {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Faturamento */
   .fat-controls-bar {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+    padding: 12px;
   }
-  .fat-toggle-group, .fat-subcontrols, .fat-date-selector {
+
+  .fat-toggle-group {
     width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
+
+  .fat-toggle-group .btn-fat-toggle {
+    width: 100%;
+    text-align: center;
+    min-height: 44px;
+  }
+
+  .fat-subcontrols {
+    width: 100%;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .fat-subcontrols .btn-subfilter {
+    width: 100%;
+    min-height: 40px;
+    text-align: center;
+  }
+
+  .fat-date-selector {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .fat-date-selector .form-control-sm {
+    width: 100%;
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+
+  .chart-container {
+    height: 240px;
+  }
+
+  .modal-box {
+    padding: 18px 14px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@media (max-width: 600px) {
   .metrics-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
+
   .metric-card {
-    padding: 16px 12px;
+    padding: 14px 12px;
   }
+
   .metric-val {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
   }
+
   .days-picker {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .metric-card {
+    padding: 12px 10px;
+  }
+
+  .metric-title {
+    font-size: 0.72rem;
+  }
+
+  .metric-val {
+    font-size: 1.25rem;
+    word-break: break-word;
+  }
+
+  .metric-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .metric-sub {
+    display: none;
   }
 }
 

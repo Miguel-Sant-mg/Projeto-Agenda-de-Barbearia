@@ -36,6 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const summaryHorario = document.getElementById('summaryHorario');
   const summaryTotal = document.getElementById('summaryTotal');
 
+  // Stepper Mobile DOM
+  const stepperMobileNum = document.getElementById('stepperMobileNum');
+  const stepperMobileLabel = document.getElementById('stepperMobileLabel');
+  const stepLabels = {
+    1: 'Escolha o Serviço',
+    2: 'Escolha a Data',
+    3: 'Escolha o Horário',
+    4: 'Seus Dados e Confirmação'
+  };
+
   // Botões de Navegação
   const btnNext1 = document.getElementById('btnNext1');
   const btnPrev2 = document.getElementById('btnPrev2');
@@ -278,6 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentStep = step;
 
+    // Atualiza indicador mobile
+    if (stepperMobileNum) stepperMobileNum.textContent = step;
+    if (stepperMobileLabel) stepperMobileLabel.textContent = stepLabels[step] || '';
+
     stepSections.forEach(section => {
       section.classList.remove('active');
       if (parseInt(section.dataset.step) === step) {
@@ -301,9 +315,25 @@ document.addEventListener('DOMContentLoaded', () => {
       stepperProgressBar.style.width = `${progressPercent}%`;
     }
 
-    // Scroll suave para o topo do formulário se for mobile
-    window.scrollTo({ top: document.querySelector('.booking-card').offsetTop - 90, behavior: 'smooth' });
+    // Scroll suave para o topo do formulário no celular
+    const bookingCard = document.querySelector('.booking-card');
+    if (bookingCard) {
+      const isMobile = window.innerWidth <= 768;
+      const targetTop = bookingCard.getBoundingClientRect().top + window.pageYOffset;
+      const offset = isMobile ? 68 : 86;
+      window.scrollTo({ top: Math.max(0, targetTop - offset), behavior: 'smooth' });
+    }
   }
+
+  // Permitir toque nos círculos das etapas já concluídas
+  stepItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetStep = parseInt(item.dataset.step);
+      if (targetStep < currentStep) {
+        goToStep(targetStep);
+      }
+    });
+  });
 
   // Listeners dos botões de navegação
   if (btnNext1) btnNext1.addEventListener('click', () => goToStep(2));

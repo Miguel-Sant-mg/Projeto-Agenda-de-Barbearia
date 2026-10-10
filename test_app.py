@@ -17,6 +17,14 @@ class ArteDeFavelaTestCase(unittest.TestCase):
             except Exception:
                 pass
         database.criar_banco()
+        try:
+            conn = database.conectar_banco()
+            conn.execute("DELETE FROM agendamentos")
+            conn.execute("DELETE FROM bloqueios")
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
 
     def test_01_seed_dados_iniciais(self):
         """Verifica se os servicos padrao e o usuario admin com hash foram criados"""

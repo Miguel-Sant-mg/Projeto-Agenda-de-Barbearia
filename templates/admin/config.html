@@ -169,7 +169,7 @@
   </div>
 
   <div class="table-responsive">
-    <table class="data-table">
+    <table class="data-table mobile-cards">
       <thead>
         <tr>
           <th>Nome</th>
@@ -183,27 +183,27 @@
       <tbody>
         {% for s in servicos %}
           <tr>
-            <td>
+            <td data-label="Serviço">
               <strong style="font-size: 1rem;">{{ s.nome }}</strong>
             </td>
-            <td style="color: var(--text-muted); max-width: 320px;">
+            <td data-label="Descrição" style="color: var(--text-muted); max-width: 320px;">
               {{ s.descricao }}
             </td>
-            <td>~{{ s.duracao_minutos }} minutos</td>
-            <td>
+            <td data-label="Duração">~{{ s.duracao_minutos }} minutos</td>
+            <td data-label="Preço">
               <strong style="color: var(--gold-light); font-size: 1.05rem;">{{ s.preco|moeda }}</strong>
             </td>
-            <td>
+            <td data-label="Status">
               {% if s.ativo == 1 %}
                 <span class="badge-status badge-Concluído">Ativo</span>
               {% else %}
                 <span class="badge-status badge-Cancelado">Inativo</span>
               {% endif %}
             </td>
-            <td style="text-align: right;">
+            <td data-label="Ações" style="text-align: right;">
               <div class="action-btns" style="justify-content: flex-end;">
                 <!-- Botão Editar -->
-                <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" data-open-modal="modalEditarServico{{ s.id }}">
+                <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.82rem;" data-open-modal="modalEditarServico{{ s.id }}">
                   Editar Preço
                 </button>
 
